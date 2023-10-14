@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Password Manager</title>
+</head>
+<body>
+    <h1>Password Manager</h1>
+    <label for="password">Enter Password:</label>
+    <input type="password" id="password" maxlength="20">
+    <button onclick="savePassword()">Save Password</button><br>
+
+    <label for="enteredPassword">Enter Password to Verify:</label>
+    <input type="password" id="enteredPassword">
+    <button onclick="checkPassword()">Check Password</button>
+
+    <p id="message"></p>
+
+    <script>
+        function savePassword() {
+    var password = document.getElementById("password").value;
+    if (password.length !== 20) {
+        document.getElementById("message").textContent = "Password must be exactly 20 characters long.";
+        return;
+    }
+
+    fetch('/save_password', {
+        method: 'POST',
+        body: JSON.stringify({ password: password }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+        throw new Error("Network response was not ok. Status: " + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("Response data:", data);
+        document.getElementById("message").textContent = data.message;
+    })
+    .catch(error => {
+    console.error("Fetch error:", error);
+
+    if (error.message === 'Network response was not ok') {
+        document.getElementById("message").textContent = "There was a problem with the server's response. Please try again later.";
+    } else {
+        document.getElementById("message").textContent = "An unknown error occurred. Please contact support.";
+    }
+});
+
+}
+
+
+        function checkPassword() {
+            var enteredPassword = document.getElementById("enteredPassword").value;
+
+            fetch('/check_password', {
+                method: 'POST',
+                body: JSON.stringify({ enteredPassword: enteredPassword }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Response data:", data);
+                document.getElementById("message").textContent = data.message;
+            })
+            .catch(error => {
+                console.error("Fetch error:", error);
+                document.getElementById("message").textContent = "An error occurred.";
+            });
+        }
+    </script>
+</body>
+</html>
